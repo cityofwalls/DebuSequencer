@@ -7,7 +7,7 @@ import pandas as pd
 
 def main():
     s = load_lavender()
-    t = load_midi_files_from('./Test_Midi')
+    t = load_midi_files_from('./blink182')
 
     s_seq = midi_processing.get_all_sequences(s)
     s_data = model_processing.seq_to_data(s_seq)
@@ -24,9 +24,9 @@ def main():
 
     X, y, vocab, seed, factors = model_processing.get_X_y_vocab_seed(t_data)
     rnn = model_processing.get_model(X, vocab)
-    rnn.fit(X, y, epochs=2, shuffle=False, verbose=1)
+    rnn.fit(X, y, epochs=5, shuffle=False, verbose=1)
 
-    music = model_processing.generate(rnn, t_data, seed, factors, gen_seq_length=50, num_voices=1)
+    music = model_processing.generate(rnn, t_data, seed, factors, gen_seq_length=100, num_voices=1)
     music.show()
 
     midi_processing.write_to_disk(music)

@@ -3,7 +3,7 @@ import glob
 
 def load_lavender():
     lavender_score = converter.parse(
-        '/Users/jesse/Documents/Code/AMLI/Projects/Final/Test_Midi/pokemon_lavender.mid')
+        './Test_Midi/pokemon_lavender.mid')
     return lavender_score
 
 def load_midi_files_from(dir):

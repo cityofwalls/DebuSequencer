@@ -38,8 +38,8 @@ def wavgen():
     y = y / num_labels
 
     X, y = array(X), array(y)
-    X = X.reshape(1, len(X)//byte_length, byte_length)
-    y = y.reshape(1, len(y), 1)
+    X = X.reshape(len(X)//byte_length, 1, byte_length)
+    y = y.reshape(len(y), 1, 1)
 
     # Testing model
     # model = Sequential()
@@ -71,7 +71,9 @@ def wavgen():
 
     model.fit(X, y, epochs=3, shuffle=False, verbose=1)
 
-    preds = model.predict(X, verbose=0)
+    preds = []
+    for i in range(len(X)):
+        preds.append(model.predict(X, verbose=0))
 
     bs = []
     for p in preds[0]:
