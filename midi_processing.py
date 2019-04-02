@@ -9,7 +9,7 @@ TIME_SIGNATURE = meter.TimeSignature
 def __extract_rest(element):
     dur = element.duration.quarterLength
     if dur > 6.0:
-        dur = 6.0
+        dur = 7.0
     return '&&', '0', dur
 
 def __extract_note(element):
