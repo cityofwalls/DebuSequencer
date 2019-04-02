@@ -8,8 +8,8 @@ TIME_SIGNATURE = meter.TimeSignature
 
 def __extract_rest(element):
     dur = element.duration.quarterLength
-    if dur > 4.0:
-        dur = 4.0
+    if dur > 6.0:
+        dur = 6.0
     return '&&', '0', dur
 
 def __extract_note(element):
@@ -98,3 +98,4 @@ def get_all_sequences(lavender):
 def write_to_disk(lavender):
     lavender.write('midi', fp='peepthis.mid')
     peep = converter.parse('./peepthis.mid')
+    print('Written to ./peepthis.mid')
