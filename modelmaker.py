@@ -7,6 +7,8 @@ from keras.layers import LSTM
 from keras.layers import Dropout
 from keras.layers import Dense
 from keras.layers import Activation
+from keras.optimizers import RMSprop
+from keras.optimizers import Adam
 from keras.utils import np_utils
 import midistuff
 
@@ -25,7 +27,9 @@ class Brain:
                  num_voices=1,
                  act='softmax',
                  loss_func='sparse_categorical_crossentropy',
-                 opt='rmsprop'):
+                 opt='rmsprop',
+                 learning_rate=0.001,
+                 epsilon=None):
         """  """
         self.train_seq_length = train_seq_length
         self.X, self.y = self.data_to_X_y(data)
@@ -51,7 +55,12 @@ class Brain:
 
         self.model.add(Dense(self.vocab))
         self.model.add(Activation(act))
-        self.model.compile(loss=loss_func, optimizer=opt)
+        if opt == 'rmsprop':
+            self.model.compile(loss=loss_func, optimizer=RMSprop(lr=learning_rate,epsilon=epsilon))
+        elif opt == 'adam':
+            self.model.compile(loss=loss_func, optimizer=Adam(lr=learning_rate, epsilon=epsilon, amsgrad=False))
+        else:
+            self.model.compile(loss=loss_func, optimizer=opt)
 
     def data_to_X_y(self, data):
         """ Given a dataset of music21 objects, get input set (X) and label (y)

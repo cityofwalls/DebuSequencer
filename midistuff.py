@@ -189,10 +189,10 @@ def mus_seq_to_data(sequences):
 
 def data_to_mus_seq(data, factors, num_voices):
     debusequence = stream.Stream()
-    for _ in range(num_voices):
+    for i in range(num_voices):
         voice = stream.Stream()
         offset = 0.0
-        for i in range(len(data)):
+        for j in range(i*(len(data)//num_voices), (i+1)*(len(data)//num_voices)):
             pred = factors[data[i]]
             if pred[0] == '&&':
                 new_note = note.Rest()
