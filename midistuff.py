@@ -31,7 +31,7 @@ def transpose_to_c(note, orig_key):
             note.transpose(t_pose)
             return note
         else:
-            note.transpose(t_pose)
+            note.transpose(-1)
             return note
     # We don't change 'even' sharps
     return note

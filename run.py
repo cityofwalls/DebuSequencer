@@ -1,7 +1,5 @@
 from music21 import *
-from load_midi import *
-import midi_processing
-import model_processing
+from loadmidi import load_midi_files_from
 import midistuff
 from modelmaker import Brain
 
@@ -18,8 +16,8 @@ def main():
     for seq in t_seqs:
         t_data.append(midistuff.mus_seq_to_data(seq))
 
-    rnn = Brain(t_data, learning_rate=0.0001, epsilon=0.0000000001)
-    rnn.train(num_of_epochs=5)
+    rnn = Brain(t_data, opt='adam', learning_rate=0.0001, epsilon=10e-12)
+    rnn.train(num_of_epochs=20)
 
     generated_score = rnn.generate()
     midistuff.write_to_midi(generated_score, 'test')
