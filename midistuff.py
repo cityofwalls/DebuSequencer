@@ -217,6 +217,6 @@ def data_to_mus_seq(data, factors, num_voices):
     return debusequence
 
 def write_to_midi(lavender, filename='peepthis'):
-    lavender.write('midi', fp=f'{filename}.mid')
-    peep = converter.parse(f'./{filename}.mid')
-    print(f'Written to ./{filename}.mid')
+    lavender.write('midi', fp='{}.mid'.format(filename))
+    peep = converter.parse('./{}.mid'.format(filename))
+    print('Written to ./{}.mid'.format(filename))
