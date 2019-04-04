@@ -193,7 +193,7 @@ def data_to_mus_seq(data, factors, num_voices):
         voice = stream.Stream()
         offset = 0.0
         for j in range(i*(len(data)//num_voices), (i+1)*(len(data)//num_voices)):
-            pred = factors[data[i]]
+            pred = factors[data[j]]
             if pred[0] == '&&':
                 new_note = note.Rest()
             elif isinstance(pred[0], tuple):

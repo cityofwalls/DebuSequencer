@@ -18,7 +18,7 @@ def main():
     for seq in t_seqs:
         t_data.append(midistuff.mus_seq_to_data(seq))
 
-    rnn = Brain(t_data, learning_rate=0.0001, epsilon=0.00000001)
+    rnn = Brain(t_data, learning_rate=0.0001, epsilon=0.0000000001)
     rnn.train(num_of_epochs=5)
 
     generated_score = rnn.generate()
