@@ -5,8 +5,8 @@ import datetime
 
 def find():
     find_lr_ep = True
-    attempts = 1
-    t = load_midi_files_from('./Test_Midi')
+    attempts = 12
+    t = load_midi_files_from('./Chopin')
 
     t_seqs = []
     for seq in t:
