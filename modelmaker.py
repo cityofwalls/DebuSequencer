@@ -56,7 +56,7 @@ class Brain:
         self.model.add(Dense(self.vocab))
         self.model.add(Activation(act))
         if opt == 'rmsprop':
-            self.model.compile(loss=loss_func, optimizer=RMSprop(lr=learning_rate,epsilon=epsilon))
+            self.model.compile(loss=loss_func, optimizer=RMSprop(lr=learning_rate,epsilon=epsilon), metrics=['accuracy'])
         elif opt == 'adam':
             self.model.compile(loss=loss_func, optimizer=Adam(lr=learning_rate, epsilon=epsilon, amsgrad=False))
         else:
@@ -128,7 +128,7 @@ class Brain:
         self.seed = seed.reshape(1, 1, self.train_seq_length)
 
     def train(self, num_of_epochs=2):
-        self.model.fit(self.X, self.y, epochs=num_of_epochs, shuffle=False, verbose=1)
+        return self.model.fit(self.X, self.y, epochs=num_of_epochs, shuffle=False, verbose=1)
 
     def sample(self, preds):
         preds = np.asarray(preds).astype('float64')

@@ -1,0 +1,19 @@
+
+--- Test 1 ---
+LSTM layers: 2, Dense layers: 1
+LSTM nodes: 128, Dense layers: 128
+Length of training sequence: 10
+Optimizer: rmsprop
+Learning Rate: 0.010000000000000002, Epsilon: 0.010000000000000002
+
+--- Test 2 ---
+LSTM layers: 3, Dense layers: 2
+LSTM nodes: 256, Dense layers: 256
+Length of training sequence: 100
+Optimizer: adam
+Learning Rate: 0.0010000000000000002, Epsilon: 0.0010000000000000002
+
+Best for loss:
+best loss=5.52986891664823
+lstm layers=2, dense layers=1, lstm nodes=128, dense nodes=128
+lr=0.010000000000000002, ep=0.010000000000000002

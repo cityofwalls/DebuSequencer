@@ -17,7 +17,7 @@ def __sample(preds, temperature=1.0):
     return np.argmax(probas)
 
 def wavgen():
-    byte_length = 8
+    byte_length = 1
     moro, params = load_moro()
 
     moro = moro.readframes(moro.getnframes())

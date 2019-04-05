@@ -6,7 +6,7 @@ from modelmaker import Brain
 import pandas as pd
 
 def main():
-    t = load_midi_files_from('./Test_Midi')
+    t = load_midi_files_from('./Bach_Inventions')
 
     t_seqs = []
     for seq in t:
@@ -16,8 +16,8 @@ def main():
     for seq in t_seqs:
         t_data.append(midistuff.mus_seq_to_data(seq))
 
-    rnn = Brain(t_data, opt='adam', learning_rate=0.0001, epsilon=10e-12)
-    rnn.train(num_of_epochs=20)
+    rnn = Brain(t_data, opt='rmsprop', learning_rate=10e-3, epsilon=10e-3)
+    rnn.train(num_of_epochs=10)
 
     generated_score = rnn.generate()
     midistuff.write_to_midi(generated_score, 'test')

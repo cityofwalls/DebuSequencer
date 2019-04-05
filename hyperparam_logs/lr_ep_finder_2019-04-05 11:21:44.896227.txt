@@ -1,0 +1,11 @@
+
+--- Test 1 ---
+LSTM layers: 2, Dense layers: 1
+LSTM nodes: 128, Dense layers: 128
+Length of training sequence: 10
+Learning Rate: 0.010000000000000002, Epsilon: 0.010000000000000002
+
+
+Best for accuracy:acc=0.02446607291790778, lr=0.010000000000000002, ep=0.010000000000000002
+
+Best for loss:loss=5.509121214549504, lr=0.010000000000000002, ep=0.010000000000000002
