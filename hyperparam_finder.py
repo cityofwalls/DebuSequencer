@@ -69,6 +69,7 @@ def find():
                                         lr_ep_txt.write('Optimizer: {}\n'.format(opty))
                                         lr_ep_txt.write('Learning Rate: {}, Epsilon: {}\n'.format(lr,ep))
                                     rnn = Brain(t_data,
+                                                gpu=True,
                                                 train_seq_length=len_train_seq,
                                                 num_lstm_layers=num_lstm,
                                                 num_dense_layers=num_dense,

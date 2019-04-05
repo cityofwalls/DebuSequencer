@@ -1,0 +1,7 @@
+
+--- Test 1 ---
+LSTM layers: 2, Dense layers: 1
+LSTM nodes: 4, Dense layers: 4
+Length of training sequence: 20
+Optimizer: rmsprop
+Learning Rate: 0.010000000000000002, Epsilon: 0.010000000000000002

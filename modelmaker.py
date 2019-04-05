@@ -4,8 +4,10 @@ from numpy import array
 from random import choice
 from keras.models import Sequential
 from keras.layers import LSTM
+from keras.layers import CuDNNLSTM
 from keras.layers import Dropout
 from keras.layers import Dense
+from keras.layers import CuDNNGRU
 from keras.layers import Activation
 from keras.optimizers import RMSprop
 from keras.optimizers import Adam
@@ -16,6 +18,7 @@ class Brain:
     """  """
     def __init__(self,
                  data,
+                 gpu=False,
                  train_seq_length=100,
                  num_lstm_layers=2,
                  num_dense_layers=1,
@@ -39,21 +42,40 @@ class Brain:
         self.num_voices = num_voices
 
         self.model = Sequential()
-        self.model.add(LSTM(
-                        lstm_nodes,
-                        input_shape=(self.X.shape[1], self.X.shape[2]),
-                        return_sequences=True))
+        if not gpu:
+            self.model.add(LSTM(
+                            lstm_nodes,
+                            input_shape=(self.X.shape[1], self.X.shape[2]),
+                            return_sequences=True))
+        else:
+            self.model.add(CuDNNLSTM(
+                            lstm_nodes,
+                            input=(self.X.shape[1], self.X.shape[2]),
+                            return_sequences=True))
         self.model.add(Dropout(dropout_rate))
 
-        for i in range(1, num_lstm_layers):
-            self.model.add(LSTM(lstm_nodes, return_sequences=True))
-            self.model.add(Dropout(dropout_rate))
+        if not gpu:
+            for i in range(1, num_lstm_layers):
+                self.model.add(LSTM(lstm_nodes, return_sequences=True))
+                self.model.add(Dropout(dropout_rate))
 
-        for i in range(num_dense_layers):
-            self.model.add(Dense(dense_nodes))
-            self.model.add(Dropout(dropout_rate))
+            for i in range(num_dense_layers):
+                self.model.add(Dense(dense_nodes))
+                self.model.add(Dropout(dropout_rate))
 
-        self.model.add(Dense(self.vocab))
+            self.model.add(Dense(self.vocab))
+
+        else:
+            for i in range(1, num_lstm_layers):
+                self.model.add(CuDNNLSTM(lstm_nodes, return_sequences=True))
+                self.model.add(Dropout(dropout_rate))
+
+            for i in range(num_dense_layers):
+                self.model.add(CuDNNGRU(dense_nodes))
+                self.model.add(Dropout(dropout_rate))
+
+            self.model.add(CuDNNGRU(self.vocab))
+
         self.model.add(Activation(act))
         if opt == 'rmsprop':
             self.model.compile(loss=loss_func, optimizer=RMSprop(lr=learning_rate,epsilon=epsilon), metrics=['accuracy'])
