@@ -5,8 +5,8 @@ import datetime
 
 def find():
     find_lr_ep = True
-    attempts = 12
-    t = load_midi_files_from('./Chopin')
+    attempts = 1
+    t = load_midi_files_from('./Test_Midi')
 
     t_seqs = []
     for seq in t:
@@ -69,7 +69,7 @@ def find():
                                         lr_ep_txt.write('Optimizer: {}\n'.format(opty))
                                         lr_ep_txt.write('Learning Rate: {}, Epsilon: {}\n'.format(lr,ep))
                                     rnn = Brain(t_data,
-                                                gpu=True,
+                                                gpu=False,
                                                 train_seq_length=len_train_seq,
                                                 num_lstm_layers=num_lstm,
                                                 num_dense_layers=num_dense,
