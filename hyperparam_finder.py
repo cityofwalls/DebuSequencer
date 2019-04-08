@@ -5,8 +5,7 @@ import datetime
 
 def find():
     find_lr_ep = True
-    attempts = 12
-    t = load_midi_files_from('./Chopin')
+    t = load_midi_files_from('./blink182')
 
     t_seqs = []
     for seq in t:
@@ -17,15 +16,20 @@ def find():
         t_data.append(midistuff.mus_seq_to_data(seq))
 
     if find_lr_ep:
-        lr_ep_txt = open('./hyperparam_logs/lr_ep_finder_{}.txt'.format(datetime.datetime.now()), 'w')
+        d = datetime.datetime.now()
+        lr_ep_txt = open('./hyperparam_logs/lr_ep_finder_{}.txt'.format(str(d.date()) +
+                                                                        '_' +
+                                                                        str(d.time()).split('.')[0]),
+                                                                        'w')
 
     opts = ['rmsprop', 'adam']
-    len_train_seq = 10
-    num_lstm = 1
-    num_dense = 0
-    lstm_nodes = 2
-    dense_nodes = 2
-    lr, ep = 0.1, 0.1
+    len_train_seq = [10, 20, 30, 40, 50]
+    lstm_layers = [2, 3, 4, 5]
+    dense_layers = [1, 2, 3, 4]
+    num_lstm_nodes = [128, 256, 512, 1028]
+    num_dense_nodes = [128, 256, 512, 1024]
+    lrs = [5e-1, 1e-1, 5e-3, 1e-3]#, 5e-5, 1e-5, 5e-7, 1e-7, 5e-9, 1e-9, 5e-11, 1e-11]
+    eps = [5e-1, 1e-1, 5e-3, 1e-3]#, 5e-5, 1e-5, 5e-7, 1e-7, 5e-9, 1e-9, 5e-11, 1e-11]
     best_acc, best_loss = 0.0, 100.0
 
     best_num_lstm_layers_acc = 0
@@ -44,33 +48,27 @@ def find():
     best_lr_loss, best_ep_loss = 0.1, 0.1
     test_num = 0
     for opty in opts:
-        for _ in range(attempts):
-            len_train_seq += 10
-            for _ in range(attempts):
-                lstm_nodes *= 2
-                for _ in range(attempts):
-                    dense_nodes *= 2
-                    for _ in range(attempts):
-                        num_dense += 1
-                        for _ in range(attempts):
-                            num_lstm += 1
-                            for _ in range(attempts):
-                                ep *= 0.1
-                                for _ in range(attempts):
-                                    lr *= 0.1
+        for train_seq_length in len_train_seq:
+            for lstm_nodes in num_lstm_nodes:
+                for dense_nodes in num_dense_nodes:
+                    for num_dense in dense_layers:
+                        for num_lstm in lstm_layers:
+                            for ep in eps:
+                                for lr in lrs:
                                     test_num += 1
                                     print()
                                     print('--- Test {} ---'.format(test_num))
+                                    print('train seq len={}, lstm nodes={}, dense nodes={}, dense layers={}, lstm layers={}, ep={}, lr={}'.format(train_seq_length,lstm_nodes,dense_nodes,num_dense,num_lstm,ep,lr))
                                     if find_lr_ep:
                                         lr_ep_txt.write('\n--- Test {} ---\n'.format(test_num))
                                         lr_ep_txt.write('LSTM layers: {}, Dense layers: {}\n'.format(num_lstm, num_dense))
                                         lr_ep_txt.write('LSTM nodes: {}, Dense layers: {}\n'.format(lstm_nodes, dense_nodes))
-                                        lr_ep_txt.write('Length of training sequence: {}\n'.format(len_train_seq))
+                                        lr_ep_txt.write('Length of training sequence: {}\n'.format(train_seq_length))
                                         lr_ep_txt.write('Optimizer: {}\n'.format(opty))
                                         lr_ep_txt.write('Learning Rate: {}, Epsilon: {}\n'.format(lr,ep))
                                     rnn = Brain(t_data,
                                                 gpu=False,
-                                                train_seq_length=len_train_seq,
+                                                train_seq_length=train_seq_length,
                                                 num_lstm_layers=num_lstm,
                                                 num_dense_layers=num_dense,
                                                 lstm_nodes=lstm_nodes,
@@ -78,7 +76,7 @@ def find():
                                                 opt=opty,
                                                 learning_rate=lr,
                                                 epsilon=ep)
-                                    hist = rnn.train(num_of_epochs=10)
+                                    hist = rnn.train(num_of_epochs=1)
                                     # for acc in hist.history['acc']:
                                     #     if acc > best_acc:
                                     #         best_acc = acc

@@ -13,6 +13,7 @@ from keras.optimizers import RMSprop
 from keras.optimizers import Adam
 from keras.utils import np_utils
 import midistuff
+from loadwav import data_to_wav
 
 class Brain:
     """  """
@@ -32,7 +33,9 @@ class Brain:
                  loss_func='sparse_categorical_crossentropy',
                  opt='rmsprop',
                  learning_rate=0.001,
-                 epsilon=None):
+                 epsilon=None,
+                 midi_mode=True,
+                 header=None):
         """  """
         self.train_seq_length = train_seq_length
         self.X, self.y = self.data_to_X_y(data)
@@ -40,6 +43,8 @@ class Brain:
         self.temperature = temperature
         self.generate_length = generate_length
         self.num_voices = num_voices
+        self.midi_mode = midi_mode
+        self.header = header
 
         self.model = Sequential()
         if not gpu:
@@ -172,5 +177,7 @@ class Brain:
             cur_seq = cur_seq.reshape(1, 1, self.train_seq_length)
 
         #print(predicted_sequence)
-
-        return midistuff.data_to_mus_seq(predicted_sequence, self.factors, self.num_voices)
+        if self.midi_mode:
+            return midistuff.data_to_mus_seq(predicted_sequence, self.factors, self.num_voices)
+        else:
+            return data_to_wav(predicted_sequence, self.header)

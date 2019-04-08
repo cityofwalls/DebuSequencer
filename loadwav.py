@@ -9,6 +9,13 @@ def load_moro():
 
     return moro, moro.getparams()
 
+def data_to_wav(X, header):
+    X__ = bytes(X)
+
+    file = header + X__
+
+    return file
+
 def write_wav(file, params, path):
     output = wave.open(path, mode='wb')
     output.setparams(params)
