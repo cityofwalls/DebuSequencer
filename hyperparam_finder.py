@@ -96,7 +96,7 @@ def find():
                                             best_num_dense_layers_loss = num_dense
                                             best_num_lstm_nodes_loss = lstm_nodes
                                             best_num_dense_nodes_loss = dense_nodes
-                                            best_training_seq_length_loss = len_train_seq
+                                            best_training_seq_length_loss = train_seq_length
 
     # print()
     # print('Best for accuracy:')
