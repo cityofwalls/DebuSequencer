@@ -5,7 +5,7 @@ import datetime
 
 def find():
     find_lr_ep = True
-    t = load_midi_files_from('./blink182')
+    t = load_midi_files_from('./Test_Midi')
 
     t_seqs = []
     for seq in t:
@@ -24,12 +24,12 @@ def find():
 
     opts = ['rmsprop', 'adam']
     len_train_seq = [10, 20, 30, 40, 50]
-    lstm_layers = [2, 3, 4, 5]
-    dense_layers = [1, 2, 3, 4]
+    lstm_layers = [4, 5, 6, 7]
+    dense_layers = [3, 4, 5, 6]
     num_lstm_nodes = [128, 256, 512, 1028]
     num_dense_nodes = [128, 256, 512, 1024]
-    lrs = [5e-1, 1e-1, 5e-3, 1e-3]#, 5e-5, 1e-5, 5e-7, 1e-7, 5e-9, 1e-9, 5e-11, 1e-11]
-    eps = [5e-1, 1e-1, 5e-3, 1e-3]#, 5e-5, 1e-5, 5e-7, 1e-7, 5e-9, 1e-9, 5e-11, 1e-11]
+    lrs = [0.005]#, 5e-5, 1e-5, 5e-7, 1e-7, 5e-9, 1e-9, 5e-11, 1e-11]
+    eps = [0.5]#, 5e-5, 1e-5, 5e-7, 1e-7, 5e-9, 1e-9, 5e-11, 1e-11]
     best_acc, best_loss = 0.0, 100.0
 
     best_num_lstm_layers_acc = 0
@@ -76,7 +76,7 @@ def find():
                                                 opt=opty,
                                                 learning_rate=lr,
                                                 epsilon=ep)
-                                    hist = rnn.train(num_of_epochs=1)
+                                    hist = rnn.train(num_of_epochs=50)
                                     # for acc in hist.history['acc']:
                                     #     if acc > best_acc:
                                     #         best_acc = acc
