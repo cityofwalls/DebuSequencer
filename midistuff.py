@@ -221,8 +221,7 @@ def mus_seqs_save(seqs, filename):
 
     for seq in seqs:
         for elem in seq:
-            file.write(str(elem) + ' ')
-        file.write('\n')
+            file.write(str(elem) + '|')
 
     file.close()
     print('\nMusic sequence written to {}\n'.format(filename))
@@ -232,8 +231,8 @@ def mus_seqs_load(filename):
     file = open(filename, 'r')
 
     for line in file.readlines():
-        elems = line.split(' ')
-        seqs.append(elems)
+        elems = line.split('|')
+        seqs.append(eval(elems))
 
     file.close()
     print('\nMusic sequence read from {}\n'.format(filename))

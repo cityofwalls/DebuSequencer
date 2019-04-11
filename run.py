@@ -24,7 +24,7 @@ def main():
         midistuff.mus_seqs_save(t_data, save_file)
 
     rnn = Brain(t_data,
-                gpu=True,
+                gpu=False,
                 opt='rmsprop',
                 temperature=0.4,    # sampling var; 0.1 no entropy (very discrete), 1.0 max entropy (very random)
                 train_seq_length=50,
@@ -36,10 +36,10 @@ def main():
                 learning_rate=0.005,
                 epsilon=0.5,
                 gen_mode='midi',)
-    rnn.train(num_of_epochs=70)
+    rnn.train(num_of_epochs=1)
 
-    # generated_score = rnn.generate()
-    # midistuff.write_to_midi(generated_score, 'test')
-    # generated_score.show()
+    generated_score = rnn.generate()
+    midistuff.write_to_midi(generated_score, 'test')
+    generated_score.show()
 
 if __name__ == "__main__": main()
