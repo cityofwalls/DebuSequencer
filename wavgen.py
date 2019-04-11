@@ -8,7 +8,7 @@ from random import choice
 import pandas as pd
 from modelmaker import Brain
 
-def __sample(preds, temperature=1.0):
+def __sample(preds, temperature=3.0):
     # helper function to sample an index from a probability array
     preds = np.asarray(preds).astype('float64')
     preds = np.log(preds) / temperature
@@ -36,7 +36,16 @@ def main():
     #X = array(X)
     #X = X.reshape(len(X)//byte_length, 1, byte_length)
 
-    rnn = Brain([X], generate_length=len(X), midi_mode=False, header=header)    # Brain expects data to be a list of lists of datapoints
+    rnn = Brain([X],
+                learning_rate=0.005,
+                epsilon=0.5,
+                num_lstm_layers=5,
+                num_dense_layers=2,
+                temperature=0.3,
+                generate_length=len(X),
+                gen_mode='wav',
+                loss_func='sparse_categorical_crossentropy',
+                header=header)    # Brain expects data to be a list of lists of datapoints
     rnn.train(num_of_epochs=10)
 
     gen = rnn.generate()

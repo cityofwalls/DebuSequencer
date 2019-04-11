@@ -5,6 +5,7 @@ from random import choice
 from keras.models import Sequential
 from keras.layers import LSTM
 from keras.layers import CuDNNLSTM
+from keras.layers import TimeDistributed
 from keras.layers import Dropout
 from keras.layers import Dense
 from keras.layers import CuDNNGRU
@@ -21,20 +22,20 @@ class Brain:
                  data,
                  gpu=False,
                  train_seq_length=100,
-                 num_lstm_layers=2,
-                 num_dense_layers=1,
-                 lstm_nodes=512,
-                 dense_nodes=256,
+                 num_lstm_layers=5,
+                 num_dense_layers=2,
+                 lstm_nodes=256,
+                 dense_nodes=512,
                  dropout_rate=0.3,
-                 temperature=1.0,
+                 temperature=5.0,
                  generate_length=100,
                  num_voices=1,
                  act='softmax',
                  loss_func='sparse_categorical_crossentropy',
                  opt='rmsprop',
-                 learning_rate=0.001,
-                 epsilon=None,
-                 midi_mode=True,
+                 learning_rate=0.005,
+                 epsilon=0.5,
+                 gen_mode='midi',
                  header=None):
         """  """
         self.train_seq_length = train_seq_length
@@ -43,7 +44,7 @@ class Brain:
         self.temperature = temperature
         self.generate_length = generate_length
         self.num_voices = num_voices
-        self.midi_mode = midi_mode
+        self.gen_mode = gen_mode
         self.header = header
 
         self.model = Sequential()
@@ -55,7 +56,7 @@ class Brain:
         else:
             self.model.add(CuDNNLSTM(
                             lstm_nodes,
-                            input=(self.X.shape[1], self.X.shape[2]),
+                            input_shape=(self.X.shape[1], self.X.shape[2]),
                             return_sequences=True))
         self.model.add(Dropout(dropout_rate))
 
@@ -65,21 +66,26 @@ class Brain:
                 self.model.add(Dropout(dropout_rate))
 
             for i in range(num_dense_layers):
-                self.model.add(Dense(dense_nodes))
+                self.model.add(TimeDistributed(Dense(dense_nodes),
+                                                     input_shape=(self.X.shape[1], self.X.shape[2])))
                 self.model.add(Dropout(dropout_rate))
 
             self.model.add(Dense(self.vocab))
 
         else:
             for i in range(1, num_lstm_layers):
-                self.model.add(CuDNNLSTM(lstm_nodes, return_sequences=True))
+                self.model.add(CuDNNLSTM(lstm_nodes,
+                                         input_shape=(self.X.shape[1], self.X.shape[2]),
+                                         return_sequences=True))
                 self.model.add(Dropout(dropout_rate))
 
             for i in range(num_dense_layers):
-                self.model.add(CuDNNGRU(dense_nodes))
+                self.model.add(TimeDistributed(Dense(dense_nodes),
+                                                     input_shape=(self.X.shape[1], self.X.shape[2])))
                 self.model.add(Dropout(dropout_rate))
 
-            self.model.add(CuDNNGRU(self.vocab))
+            self.model.add(TimeDistributed(Dense(dense_nodes),
+                                                 input_shape=(self.X.shape[1], self.X.shape[2])))
 
         self.model.add(Activation(act))
         if opt == 'rmsprop':
@@ -91,13 +97,13 @@ class Brain:
 
     def data_to_X_y(self, data):
         """ Given a dataset of music21 objects, get input set (X) and label (y)
-            Parameters:  data,               a list of lists where each internal list is a sequence
-                                             of music21 objects representing a voice from a midi file.
+            Parameters:  data,  a list of lists where each internal list is a sequence
+                                of music21 objects representing a voice from a midi file.
 
-            Returns:     X,                  a list of lists where each internal list is a sequence
-                                             from data of length train_seq_length.
+            Returns:     X,     a list of lists where each internal list is a sequence
+                                from data of length train_seq_length.
 
-                         y,                  a list of labels (the next value for a given sequence). """
+                         y,     a list of labels (the next value for a given sequence). """
 
         # Flatten data into a single sequence and factorize
         # This unifies the factors (categories) across all sequences
@@ -177,7 +183,7 @@ class Brain:
             cur_seq = cur_seq.reshape(1, 1, self.train_seq_length)
 
         #print(predicted_sequence)
-        if self.midi_mode:
+        if self.gen_mode == 'midi':
             return midistuff.data_to_mus_seq(predicted_sequence, self.factors, self.num_voices)
-        else:
+        elif self.gen_mode == 'wav':
             return data_to_wav(predicted_sequence, self.header)
