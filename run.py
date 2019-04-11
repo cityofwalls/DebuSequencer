@@ -5,15 +5,23 @@ from modelmaker import Brain
 import pandas as pd
 
 def main():
-    t = load_midi_files_from('./Test_Midi')
+    dir = './Chopin'
+    save_file = dir + '_save.txt'
 
-    t_seqs = []
-    for seq in t:
-        t_seqs.append(midistuff.get_sequences(seq))
+    try:
+        t_data = midistuff.mus_seqs_load(save_file)
+    except:
+        t = load_midi_files_from(dir)
 
-    t_data = []
-    for seq in t_seqs:
-        t_data.append(midistuff.mus_seq_to_data(seq))
+        t_seqs = []
+        for seq in t:
+            t_seqs.append(midistuff.get_sequences(seq))
+
+        t_data = []
+        for seq in t_seqs:
+            t_data.append(midistuff.mus_seq_to_data(seq))
+
+        midistuff.mus_seqs_save(t_data, save_file)
 
     rnn = Brain(t_data,
                 gpu=True,
@@ -28,10 +36,10 @@ def main():
                 learning_rate=0.005,
                 epsilon=0.5,
                 gen_mode='midi',)
-    rnn.train(num_of_epochs=20)
+    rnn.train(num_of_epochs=70)
 
-    generated_score = rnn.generate()
-    midistuff.write_to_midi(generated_score, 'test')
-    generated_score.show()
+    # generated_score = rnn.generate()
+    # midistuff.write_to_midi(generated_score, 'test')
+    # generated_score.show()
 
 if __name__ == "__main__": main()

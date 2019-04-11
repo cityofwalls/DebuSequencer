@@ -216,6 +216,30 @@ def data_to_mus_seq(data, factors, num_voices):
 
     return debusequence
 
+def mus_seqs_save(seqs, filename):
+    file = open(filename, 'w')
+
+    for seq in seqs:
+        for elem in seq:
+            file.write(str(elem) + ' ')
+        file.write('\n')
+
+    file.close()
+    print('\nMusic sequence written to {}\n'.format(filename))
+
+def mus_seqs_load(filename):
+    seqs = []
+    file = open(filename, 'r')
+
+    for line in file.readlines():
+        elems = line.split(' ')
+        seqs.append(elems)
+
+    file.close()
+    print('\nMusic sequence read from {}\n'.format(filename))
+
+    return seqs
+
 def write_to_midi(lavender, filename='peepthis'):
     lavender.write('midi', fp='{}.mid'.format(filename))
     peep = converter.parse('./{}.mid'.format(filename))
