@@ -41,6 +41,8 @@ class Brain:
         self.train_seq_length = train_seq_length
         self.X, self.y = self.data_to_X_y(data)
 
+        self.activation = act
+
         self.temperature = temperature
         self.generate_length = generate_length
         self.num_voices = num_voices
@@ -66,7 +68,7 @@ class Brain:
                 self.model.add(Dropout(dropout_rate))
 
             for i in range(num_dense_layers):
-                self.model.add(TimeDistributed(Dense(dense_nodes),
+                self.model.add(TimeDistributed(Dense(dense_nodes, activation=self.activation),
                                                      input_shape=(self.X.shape[1], self.X.shape[2])))
                 self.model.add(Dropout(dropout_rate))
 
@@ -80,11 +82,11 @@ class Brain:
                 self.model.add(Dropout(dropout_rate))
 
             for i in range(num_dense_layers):
-                self.model.add(TimeDistributed(Dense(dense_nodes),
+                self.model.add(TimeDistributed(Dense(dense_nodes, activation=self.activation),
                                                      input_shape=(self.X.shape[1], self.X.shape[2])))
                 self.model.add(Dropout(dropout_rate))
 
-            self.model.add(TimeDistributed(Dense(dense_nodes),
+            self.model.add(TimeDistributed(Dense(dense_nodes, activation=self.activation),
                                                  input_shape=(self.X.shape[1], self.X.shape[2])))
 
         self.model.add(Activation(act))
