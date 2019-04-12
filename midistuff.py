@@ -229,7 +229,7 @@ def mus_seqs_save(seqs, filename):
 def mus_seqs_load(filename):
     seqs = []
     file = open(filename, 'r')
-
+    
     for line in file.readlines():
         elems = line.split('|')
         seqs.append(eval(elems))
@@ -239,7 +239,7 @@ def mus_seqs_load(filename):
 
     return seqs
 
-def write_to_midi(lavender, filename='peepthis'):
+def write_to_midi(lavender, filename='./peepthis'):
     lavender.write('midi', fp='{}.mid'.format(filename))
-    peep = converter.parse('./{}.mid'.format(filename))
-    print('Written to ./{}.mid'.format(filename))
+    peep = converter.parse('{}.mid'.format(filename))
+    print('Written to {}.mid'.format(filename))

@@ -8,14 +8,14 @@ from random import choice
 import pandas as pd
 from modelmaker import Brain
 
-def __sample(preds, temperature=3.0):
-    # helper function to sample an index from a probability array
-    preds = np.asarray(preds).astype('float64')
-    preds = np.log(preds) / temperature
-    exp_preds = np.exp(preds)
-    preds = exp_preds / np.sum(exp_preds)
-    probas = np.random.multinomial(1, preds, 1)
-    return np.argmax(probas)
+# def __sample(preds, temperature=3.0):
+#     # helper function to sample an index from a probability array
+#     preds = np.asarray(preds).astype('float64')
+#     preds = np.log(preds) / temperature
+#     exp_preds = np.exp(preds)
+#     preds = exp_preds / np.sum(exp_preds)
+#     probas = np.random.multinomial(1, preds, 1)
+#     return np.argmax(probas)
 
 def main():
     byte_length = 8
@@ -41,7 +41,7 @@ def main():
                 epsilon=0.5,
                 num_lstm_layers=5,
                 num_dense_layers=2,
-                temperature=0.3,
+                temperature=0.1,
                 generate_length=len(X),
                 gen_mode='wav',
                 loss_func='sparse_categorical_crossentropy',
@@ -50,7 +50,7 @@ def main():
 
     gen = rnn.generate()
 
-    write_wav(gen, params, './X__1.wav')
+    write_wav(gen, params, './generated_files/X__1.wav')
 
     # Back to wav
     # X_ = []
