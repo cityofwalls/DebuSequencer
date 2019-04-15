@@ -1,4 +1,5 @@
 from music21 import *
+from fractions import Fraction
 
 INST = instrument.Instrument
 MET = tempo.MetronomeMark
@@ -229,10 +230,13 @@ def mus_seqs_save(seqs, filename):
 def mus_seqs_load(filename):
     seqs = []
     file = open(filename, 'r')
-    
+
     for line in file.readlines():
         elems = line.split('|')
-        seqs.append(eval(elems))
+        current_line = []
+        for elem in elems:
+            current_line.append(eval(elem))
+        seqs.append(current_line)
 
     file.close()
     print('\nMusic sequence read from {}\n'.format(filename))

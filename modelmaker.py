@@ -27,7 +27,7 @@ class Brain:
                  lstm_nodes=256,
                  dense_nodes=512,
                  dropout_rate=0.3,
-                 temperature=5.0,
+                 temperature=0.5,
                  generate_length=100,
                  num_voices=1,
                  act='softmax',
@@ -43,6 +43,7 @@ class Brain:
 
         self.temperature = temperature
         self.generate_length = generate_length
+        self.last_prediction = None
         self.num_voices = num_voices
         self.gen_mode = gen_mode
         self.header = header
@@ -137,28 +138,31 @@ class Brain:
         # self.seed = array(self.get_seed(cat_data, self.train_seq_length))
         # self.seed = self.seed.reshape(1, 1, self.train_seq_length)
 
+        self.cat_data = cat_data
         self.set_seed(cat_data)
 
         return X, y
 
     def set_seed(self, seq):
         """ Given a categorical sequence, find a random seed sequence of length l. """
-        # seq_choice = choice(seq)
-        # while len(seq_choice) < self.train_seq_length:
-        #     seq_choice = choice(seqs)
-        #
-        # idx = seq_choice.index(choice(seq_choice[:-self.train_seq_length - 1]))
-        # seed = seq_choice[idx:idx+self.train_seq_length]
-        #
-        # seed = array(seed)
-        # self.seed = seed.reshape(1, 1, self.train_seq_length)
+        seq_choice = choice(seq)
+        while len(seq_choice) < self.train_seq_length:
+            seq_choice = choice(seqs)
 
-        seed = []
-        for _ in range(self.train_seq_length):
-            seed.append(choice(range(self.vocab)))
+        idx = seq_choice.index(choice(seq_choice[:-self.train_seq_length - 2]))
+        seed = seq_choice[idx:idx+self.train_seq_length]
 
         seed = array(seed)
         self.seed = seed.reshape(1, 1, self.train_seq_length)
+
+        self.real_next_after_seed = seq_choice[idx+self.train_seq_length+1]
+
+        # seed = []
+        # for _ in range(self.train_seq_length):
+        #     seed.append(choice(range(self.vocab)))
+        #
+        # seed = array(seed)
+        # self.seed = seed.reshape(1, 1, self.train_seq_length)
 
     def train(self, num_of_epochs=2):
         return self.model.fit(self.X, self.y, epochs=num_of_epochs, shuffle=False, verbose=1)
@@ -177,10 +181,12 @@ class Brain:
         for i in range(self.generate_length * self.num_voices):
             y_hat = self.model.predict(cur_seq, verbose=0)[0][0]
             idx = self.sample(y_hat)
+            self.last_prediction = idx
             predicted_sequence.append(idx)
             cur_seq = cur_seq[0][0][1:]
             cur_seq = np.append(cur_seq, idx)
             cur_seq = cur_seq.reshape(1, 1, self.train_seq_length)
+
 
         #print(predicted_sequence)
         if self.gen_mode == 'midi':
