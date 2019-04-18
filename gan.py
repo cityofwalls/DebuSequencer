@@ -12,6 +12,7 @@ from keras.optimizers import Adam
 from keras.utils import np_utils
 import numpy as np
 from numpy import array
+import midistuff
 
 class GAN(Brain):
     def __init__(self,
@@ -34,49 +35,61 @@ class GAN(Brain):
                  gen_mode='midi',
                  header=None):
         Brain.__init__(self,
-                         data,
-                         gpu=gpu,
-                         train_seq_length=train_seq_length,
-                         num_lstm_layers=num_lstm_layers,
-                         num_dense_layers=num_dense_layers,
-                         lstm_nodes=lstm_nodes,
-                         dense_nodes=dense_nodes,
-                         dropout_rate=dropout_rate,
-                         temperature=temperature,
-                         generate_length=generate_length,
-                         num_voices=num_voices,
-                         act=act,
-                         loss_func=loss_func,
-                         opt=opt,
-                         learning_rate=learning_rate,
-                         epsilon=epsilon,
-                         gen_mode=gen_mode,
-                         header=header)
+                       data,
+                       gpu=gpu,
+                       train_seq_length=train_seq_length,
+                       num_lstm_layers=num_lstm_layers,
+                       num_dense_layers=num_dense_layers,
+                       lstm_nodes=lstm_nodes,
+                       dense_nodes=dense_nodes,
+                       dropout_rate=dropout_rate,
+                       temperature=temperature,
+                       generate_length=generate_length,
+                       num_voices=num_voices,
+                       act=act,
+                       loss_func=loss_func,
+                       opt=opt,
+                       learning_rate=learning_rate,
+                       epsilon=epsilon,
+                       gen_mode=gen_mode,
+                       header=header)
 
-        self.generator = Brain( data,
-                                gpu=gpu,
-                                train_seq_length=train_seq_length,
-                                num_lstm_layers=num_lstm_layers,
-                                num_dense_layers=num_dense_layers,
-                                lstm_nodes=lstm_nodes,
-                                dense_nodes=dense_nodes,
-                                dropout_rate=dropout_rate,
-                                temperature=temperature,
-                                generate_length=1,
-                                num_voices=num_voices,
-                                act=act,
-                                loss_func=loss_func,
-                                opt=opt,
-                                learning_rate=learning_rate,
-                                epsilon=epsilon,
-                                gen_mode=gen_mode,
-                                header=header)
+        print('\nVanilla Brain:')
+        print(self.model.summary())
+        self.model.pop()
+        self.model.pop()
+        self.model.add(TimeDistributed(Dense(2),
+                                        input_shape=(self.X.shape[1], self.X.shape[2])))
+        self.model.add(Activation(act))
+        self.model.compile(loss=loss_func, optimizer=RMSprop(lr=learning_rate,epsilon=epsilon), metrics=['accuracy'])
+
+        print('\nChanged to Binary Discriminator:')
+        print(self.model.summary())
+
+        self.generator = Brain(data,
+                               gpu=gpu,
+                               train_seq_length=train_seq_length,
+                               num_lstm_layers=num_lstm_layers,
+                               num_dense_layers=num_dense_layers,
+                               lstm_nodes=lstm_nodes,
+                               dense_nodes=dense_nodes,
+                               dropout_rate=dropout_rate,
+                               temperature=temperature,
+                               generate_length=1,
+                               num_voices=num_voices,
+                               act=act,
+                               loss_func=loss_func,
+                               opt=opt,
+                               learning_rate=learning_rate,
+                               epsilon=epsilon,
+                               gen_mode=gen_mode,
+                               header=header)
+
         self.real_next_after_seed = self.generator.real_next_after_seed
 
     def train(self, discriminator_epochs=1, generator_epochs=1):
-        dataset_len = len(self.X[0])
-        print(dataset_len)
-        #self.generator.train(num_of_epochs=generator_epochs)
+        print('\nTraining generator for {} epochs\n'.format(generator_epochs))
+        self.generator.train(num_of_epochs=generator_epochs)
 
         # Update self.X and self.y to be arrays of real sequences (with target 1)
         for i in range(len(self.X)):
@@ -86,48 +99,54 @@ class GAN(Brain):
                 self.X[i][j] = np.append(self.X[i][j][1:], self.y[i][j])
                 self.y[i][j] = 1
 
-        #print(self.X)
-        #print(self.y)
-
+        print('\nTraining discriminator on actual data for {} epochs\n'.format(discriminator_epochs))
         super().train(num_of_epochs=discriminator_epochs)
 
         # Update self.X and self.y to be arrays of fake sequences with generated output from the generator (with target 0)
+        print('\nAsking generator to predict {} values\n'.format(len(self.X)))
         generated_values = []
-        for i in range(dataset_len):
-            self.generator.generate()
-            generated_values.append(self.generator.last_prediction)
+        for i in range(len(self.X)):
+            current_gens = []
+            for j in range(len(self.X[i])):
+                self.generator.generate()
+                current_gens.append(self.generator.last_prediction)
+            generated_values.append(current_gens)
 
         for i in range(len(self.X)):
             for j in range(len(self.X[i])):
-                
-                print(self.X[i][j])
+                self.X[i][j][-1] = generated_values[i][j]
+                self.y[i][j] = 0
 
+        print('\nTraining discriminator on generated data for {} epochs\n'.format(discriminator_epochs))
+        super().train(num_of_epochs=discriminator_epochs)
 
-    # def train(self, num_of_epochs=1):
-    #     for epoch in range(num_of_epochs):
-    #         self.generator.train(num_of_epochs=1)
-    #         self.generator.generate()
-    #         generated_value = self.generator.current_predicition
-    #         print()
-    #         print(self.seed)    # Current seed used to predict
-    #         print(self.generator.real_next_after_seed)  # Real value next in sequence
-    #         print(generated_value)  # Generator's current prediction
-    #
-    #         # Train self on actual value (as True or 1 in output)
-    #         # and generator's prediction (as False or 0 in output)
-    #         actual_X, actual_y = np.append(self.seed[0][0][1:], self.generator.real_next_after_seed), np.array([1])
-    #         fake_X, fake_y     = np.append(self.seed[0][0][1:], generated_value), np.array([0])
-    #
-    #         actual_X, actual_y = actual_X.reshape(1, 1, len(actual_X)), actual_y.reshape(1, 1, 1)
-    #         fake_X, fake_y = fake_X.reshape(1, 1, len(fake_X)), fake_y.reshape(1, 1, 1)
-    #
-    #         self.model.fit(actual_X, actual_y, shuffle=False, verbose=1)
-    #         self.model.fit(fake_X, fake_y, shuffle=False, verbose=1)
-    #
-    #         # Reset seed for next epoch
-    #         self.generator.set_seed(self.generator.cat_data)
-    #         self.seed = self.generator.seed
-    #         self.real_next_after_seed = self.generator.real_next_after_seed
+    def discriminate(self, cur_seq):
+        self.generator.generate()
+        gen_prediction = self.generator.last_prediction
+        input = np.append(cur_seq[0][0][1:], gen_prediction)
+        input = input.reshape(1, 1, len(input))
+        y_hat = self.model.predict(input, verbose=0)[0][0]
+        return self.sample(y_hat)
+
+    def generate(self):
+        predicted_sequence = []
+        cur_seq = self.seed
+        gen_temperature = self.generator.temperature
+        for i in range(self.generate_length):
+            y_hat = self.discriminate(cur_seq)
+            while y_hat < 0.5:
+                self.generator.temperature += 0.05
+                y_hat = self.discriminate(cur_seq)
+            self.generator.temperature = gen_temperature
+
+            predicted_sequence.append(self.generator.last_prediction)
+            cur_seq = np.append(cur_seq[0][0][1:], self.generator.last_prediction)
+            cur_seq = cur_seq.reshape(1, 1, len(cur_seq))
+
+        if self.gen_mode == 'midi':
+            return midistuff.data_to_mus_seq(predicted_sequence, self.factors, self.num_voices)
+        elif self.gen_mode == 'wav':
+            return data_to_wav(predicted_sequence, self.header)
 
 
 # class GAN:

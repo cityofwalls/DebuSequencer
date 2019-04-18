@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from numpy import array
 from random import choice
+from random import randrange
 from keras.models import Sequential
 from keras.layers import LSTM
 from keras.layers import CuDNNLSTM
@@ -15,11 +16,16 @@ from keras.optimizers import Adam
 from keras.utils import np_utils
 import midistuff
 from loadwav import data_to_wav
+import h5py
+from keras.models import save_model
+from keras.models import load_model
+from fractions import Fraction
+import pickle as pkl
 
 class Brain:
     """  """
     def __init__(self,
-                 data,
+                 data=None,
                  gpu=False,
                  train_seq_length=100,
                  num_lstm_layers=5,
@@ -39,7 +45,8 @@ class Brain:
                  header=None):
         """  """
         self.train_seq_length = train_seq_length
-        self.X, self.y = self.data_to_X_y(data)
+        if data:
+            self.X, self.y = self.data_to_X_y(data)
 
         self.temperature = temperature
         self.generate_length = generate_length
@@ -48,53 +55,62 @@ class Brain:
         self.gen_mode = gen_mode
         self.header = header
 
-        self.model = Sequential()
-        if not gpu:
-            self.model.add(LSTM(
-                            lstm_nodes,
-                            input_shape=(self.X.shape[1], self.X.shape[2]),
-                            return_sequences=True))
-        else:
-            self.model.add(CuDNNLSTM(
-                            lstm_nodes,
-                            input_shape=(self.X.shape[1], self.X.shape[2]),
-                            return_sequences=True))
-        self.model.add(Dropout(dropout_rate))
+        if data:
+            self.model = Sequential()
+            if not gpu:
+                self.model.add(LSTM(
+                                lstm_nodes,
+                                input_shape=(self.X.shape[1], self.X.shape[2]),
+                                return_sequences=True))
+            else:
+                self.model.add(CuDNNLSTM(
+                                lstm_nodes,
+                                input_shape=(self.X.shape[1], self.X.shape[2]),
+                                return_sequences=True))
+            self.model.add(Dropout(dropout_rate))
 
-        if not gpu:
-            for i in range(1, num_lstm_layers):
-                self.model.add(LSTM(lstm_nodes, return_sequences=True))
-                self.model.add(Dropout(dropout_rate))
+            if not gpu:
+                for i in range(1, num_lstm_layers):
+                    self.model.add(LSTM(lstm_nodes, return_sequences=True))
+                    self.model.add(Dropout(dropout_rate))
 
-            for i in range(num_dense_layers):
-                self.model.add(TimeDistributed(Dense(dense_nodes),
+                for i in range(num_dense_layers):
+                    self.model.add(TimeDistributed(Dense(dense_nodes),
+                                                         input_shape=(self.X.shape[1], self.X.shape[2])))
+                    self.model.add(Dropout(dropout_rate))
+
+                self.model.add(Dense(self.vocab))
+
+            else:
+                for i in range(1, num_lstm_layers):
+                    self.model.add(CuDNNLSTM(lstm_nodes,
+                                             input_shape=(self.X.shape[1], self.X.shape[2]),
+                                             return_sequences=True))
+                    self.model.add(Dropout(dropout_rate))
+
+                for i in range(num_dense_layers):
+                    self.model.add(TimeDistributed(Dense(dense_nodes),
+                                                         input_shape=(self.X.shape[1], self.X.shape[2])))
+                    self.model.add(Dropout(dropout_rate))
+
+                self.model.add(TimeDistributed(Dense(self.vocab),
                                                      input_shape=(self.X.shape[1], self.X.shape[2])))
-                self.model.add(Dropout(dropout_rate))
 
-            self.model.add(Dense(self.vocab))
-
+            self.model.add(Activation(act))
+            if opt == 'rmsprop':
+                self.model.compile(loss=loss_func, optimizer=RMSprop(lr=learning_rate,epsilon=epsilon), metrics=['accuracy'])
+            elif opt == 'adam':
+                self.model.compile(loss=loss_func, optimizer=Adam(lr=learning_rate, epsilon=epsilon, amsgrad=False))
+            else:
+                self.model.compile(loss=loss_func, optimizer=opt)
         else:
-            for i in range(1, num_lstm_layers):
-                self.model.add(CuDNNLSTM(lstm_nodes,
-                                         input_shape=(self.X.shape[1], self.X.shape[2]),
-                                         return_sequences=True))
-                self.model.add(Dropout(dropout_rate))
-
-            for i in range(num_dense_layers):
-                self.model.add(TimeDistributed(Dense(dense_nodes),
-                                                     input_shape=(self.X.shape[1], self.X.shape[2])))
-                self.model.add(Dropout(dropout_rate))
-
-            self.model.add(TimeDistributed(Dense(self.vocab),
-                                                 input_shape=(self.X.shape[1], self.X.shape[2])))
-
-        self.model.add(Activation(act))
-        if opt == 'rmsprop':
-            self.model.compile(loss=loss_func, optimizer=RMSprop(lr=learning_rate,epsilon=epsilon), metrics=['accuracy'])
-        elif opt == 'adam':
-            self.model.compile(loss=loss_func, optimizer=Adam(lr=learning_rate, epsilon=epsilon, amsgrad=False))
-        else:
-            self.model.compile(loss=loss_func, optimizer=opt)
+            self.model = None
+            self.cat_data = None
+            self.factors = None
+            self.vocab = None
+            self.seed = array([randrange(100) for i in range(self.train_seq_length)])
+            self.seed = self.seed.reshape(1, 1, len(self.seed))
+            print(self.seed)
 
     def data_to_X_y(self, data):
         """ Given a dataset of music21 objects, get input set (X) and label (y)
@@ -105,7 +121,6 @@ class Brain:
                                 from data of length train_seq_length.
 
                          y,     a list of labels (the next value for a given sequence). """
-
         # Flatten data into a single sequence and factorize
         # This unifies the factors (categories) across all sequences
         flat_data = []
@@ -144,7 +159,7 @@ class Brain:
         return X, y
 
     def set_seed(self, seq):
-        """ Given a categorical sequence, find a random seed sequence of length l. """
+        """ Given a categorical sequence, find a random seed sequence of length self.train_seq_length. """
         seq_choice = choice(seq)
         while len(seq_choice) < self.train_seq_length:
             seq_choice = choice(seqs)
@@ -193,3 +208,43 @@ class Brain:
             return midistuff.data_to_mus_seq(predicted_sequence, self.factors, self.num_voices)
         elif self.gen_mode == 'wav':
             return data_to_wav(predicted_sequence, self.header)
+
+    def save(self, path_and_filename):
+        save_model(
+            self.model,
+            path_and_filename,
+            overwrite=True,
+            include_optimizer=True
+        )
+
+        f = self.factors
+        with open(path_and_filename + '.pkl', 'wb') as output:
+            pkl.dump(f, output, pkl.HIGHEST_PROTOCOL)
+
+        # factors_file = open('./saved_models/' + training_set_name + '_factors.txt', 'w')
+        # pkl.dump(self.factors, factors_file)
+        # # for element in self.factors:
+        # #     for
+        # #     e = str(element) + '|'
+        # #     factors_file.write(e)
+        # #
+        # # print(factors_file)
+        # factors_file.close()
+
+    def load(self, path_and_filename):
+        self.model = load_model(path_and_filename,
+                               custom_objects=None,
+                               compile=True)
+
+        with open(path_and_filename + '.pkl','rb') as input:
+            f = pkl.load(input)
+        self.factors = f
+
+        # with open(factors_file) as f:
+        #     self.factors = [i.split('|') for i in f]
+        # print(self.factors)
+
+        # f = open(factors_file, 'r')
+        # factors = []
+        # for line in f:
+        #     factors.append(line)

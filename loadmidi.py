@@ -9,6 +9,7 @@ def load_lavender():
 def load_midi_files_from(dir):
     """ dir: folder name with midi files.
         Returns a list of Score objects (music21) from the given directory. """
+    print()
     lavenders = []
     for file in glob.glob(dir + '/*.mid'):
         print('Reading {}'.format(file))
