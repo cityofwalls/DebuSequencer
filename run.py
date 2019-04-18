@@ -9,12 +9,12 @@ from keras.models import save_model
 from keras.models import load_model
 
 def main():
-    dir         = './Test_Midi'
-    save_file   = './datasaves/' + dir[2:] + '_save.txt'
-    gen_file    = './generated_files/' + dir[2:] + '_gen'
-    model_file  = './saved_models/' + dir[2:] + '_model'
-    model_file2 = './saved_models/' + dir[2:] + '_factors.txt'
-    show_gen    = True
+    dir           = './Stevie'
+    save_file     = './datasaves/' + dir[2:] + '_save.txt'
+    gen_file      = './generated_files/' + dir[2:] + '_gen'
+    model_file    = './saved_models/' + dir[2:] + '_model'
+    model_file2   = './saved_models/' + dir[2:] + '_factors.txt'
+    show_gen      = True
     training_mode = True
 
     # t_data = midistuff.mus_seqs_load(save_file)
@@ -50,11 +50,10 @@ def main():
                     gen_mode='midi',
                     loss_func='sparse_categorical_crossentropy')
 
-        rnn.train(num_of_epochs=50)
+        rnn.train(num_of_epochs=100)
         rnn.save(model_file)
     else:
-        rnn = Brain(
-                    gpu=False,
+        rnn = Brain(gpu=False,
                     opt='rmsprop',
                     temperature=0.25,
                     train_seq_length=5,

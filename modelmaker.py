@@ -110,7 +110,6 @@ class Brain:
             self.vocab = None
             self.seed = array([randrange(100) for i in range(self.train_seq_length)])
             self.seed = self.seed.reshape(1, 1, len(self.seed))
-            print(self.seed)
 
     def data_to_X_y(self, data):
         """ Given a dataset of music21 objects, get input set (X) and label (y)
