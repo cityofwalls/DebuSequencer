@@ -4,42 +4,36 @@ import midistuff
 from modelmaker import Brain
 import pandas as pd
 from gan import GAN
-import h5py
-from keras.models import save_model
-from keras.models import load_model
 
 def main():
-    dir           = './Stevie'
-    save_file     = './datasaves/' + dir[2:] + '_save.txt'
-    gen_file      = './generated_files/' + dir[2:] + '_gen'
-    model_file    = './saved_models/' + dir[2:] + '_model'
-    model_file2   = './saved_models/' + dir[2:] + '_factors.txt'
+    dir           = 'Stevie'
+    data_file     = './datasaves/' + dir + '_save'
+    gen_file      = './generated_files/' + dir + '_gen'
+    model_file    = './saved_models/' + dir + '_model'
     show_gen      = True
     training_mode = True
 
-    # t_data = midistuff.mus_seqs_load(save_file)
-    # try:
-    #     t_data = midistuff.mus_seqs_load(save_file)
-    # except:
-
     if training_mode:
-        t = load_midi_files_from(dir)
+        try:
+            t_data = midistuff.mus_seqs_load(data_file)
+        except:
+            t = load_midi_files_from('./' + dir)
 
-        t_seqs = []
-        for seq in t:
-            t_seqs.append(midistuff.get_sequences(seq))
+            t_seqs = []
+            for seq in t:
+                t_seqs.append(midistuff.get_sequences(seq))
 
-        t_data = []
-        for seq in t_seqs:
-            t_data.append(midistuff.mus_seq_to_data(seq))
+            t_data = []
+            for seq in t_seqs:
+                t_data.append(midistuff.mus_seq_to_data(seq))
 
-        # midistuff.mus_seqs_save(t_data, save_file)
+            midistuff.mus_seqs_save(t_data, data_file)
 
         rnn = Brain(t_data,
                     gpu=False,
                     opt='rmsprop',
                     temperature=0.25,
-                    train_seq_length=5,
+                    train_seq_length=50,
                     num_lstm_layers=5,
                     num_dense_layers=2,
                     lstm_nodes=256,
@@ -50,7 +44,7 @@ def main():
                     gen_mode='midi',
                     loss_func='sparse_categorical_crossentropy')
 
-        rnn.train(num_of_epochs=100)
+        rnn.train(num_of_epochs=10)
         rnn.save(model_file)
     else:
         rnn = Brain(gpu=False,

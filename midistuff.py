@@ -1,5 +1,6 @@
 from music21 import *
 from fractions import Fraction
+import pickle as pkl
 
 INST = instrument.Instrument
 MET = tempo.MetronomeMark
@@ -218,29 +219,19 @@ def data_to_mus_seq(data, factors, num_voices):
     return debusequence
 
 def mus_seqs_save(seqs, filename):
-    file = open(filename, 'w')
+    s = seqs
+    with open(filename + '.pkl', 'wb') as output:
+        pkl.dump(s, output, pkl.HIGHEST_PROTOCOL)
 
-    for seq in seqs:
-        for elem in seq:
-            file.write(str(elem) + '|')
-
-    file.close()
-    print('\nMusic sequence written to {}\n'.format(filename))
+    print('\nMusic sequence written to {}\n'.format(filename + '.pkl'))
 
 def mus_seqs_load(filename):
-    seqs = []
-    file = open(filename, 'r')
+    s = []
+    with open(filename + '.pkl', 'rb') as input:
+        s = pkl.load(input)
+    seqs = s
 
-    for line in file.readlines():
-        elems = line.split('|')
-        current_line = []
-        for elem in elems:
-            current_line.append(eval(elem))
-        seqs.append(current_line)
-
-    file.close()
     print('\nMusic sequence read from {}\n'.format(filename))
-
     return seqs
 
 def write_to_midi(lavender, filename='./peepthis'):

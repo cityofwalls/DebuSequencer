@@ -103,7 +103,7 @@ class GAN(Brain):
         super().train(num_of_epochs=discriminator_epochs)
 
         # Update self.X and self.y to be arrays of fake sequences with generated output from the generator (with target 0)
-        print('\nAsking generator to predict {} values\n'.format(len(self.X)))
+        print('\nAsking generator to predict {} values'.format(len(self.X)))
         generated_values = []
         for i in range(len(self.X)):
             current_gens = []
@@ -147,80 +147,3 @@ class GAN(Brain):
             return midistuff.data_to_mus_seq(predicted_sequence, self.factors, self.num_voices)
         elif self.gen_mode == 'wav':
             return data_to_wav(predicted_sequence, self.header)
-
-
-# class GAN:
-#     def __init__(self,
-#                  data,
-#                  gan_generate_length=100,
-#                  train_seq_length=10,
-#                  lstm_nodes=256,
-#                  dense_nodes=512,
-#                  dropout_rate=0.3,
-#                  learning_rate=0.00005,
-#                  epsilon=0.5,):
-#         self.data = data
-#         self.train_seq_length = train_seq_length
-#         self.learning_rate = learning_rate
-#         self.epsilon = epsilon
-#         self.gan_generate_length = gan_generate_length
-#         self.set_generator()
-#
-#         self.discriminator = Sequential()
-#
-#         self.discriminator.add(LSTM(lstm_nodes,
-#                                     input_shape=(self.generator.X.shape[1], self.generator.X.shape[2]),
-#                                     return_sequences=True))
-#         self.discriminator.add(Dropout(dropout_rate))
-#         self.discriminator.add(LSTM(lstm_nodes, return_sequences=True))
-#         self.discriminator.add(Dropout(dropout_rate))
-#         self.discriminator.add(LSTM(lstm_nodes, return_sequences=True))
-#         self.discriminator.add(Dropout(dropout_rate))
-#         self.discriminator.add(LSTM(lstm_nodes, return_sequences=True))
-#         self.discriminator.add(Dropout(dropout_rate))
-#         self.discriminator.add(LSTM(lstm_nodes, return_sequences=True))
-#         self.discriminator.add(Dropout(dropout_rate))
-#
-#         self.discriminator.add(TimeDistributed(Dense(dense_nodes),
-#                                                input_shape=(self.generator.X.shape[1], self.generator.X.shape[2])))
-#         self.discriminator.add(Dropout(dropout_rate))
-#         self.discriminator.add(TimeDistributed(Dense(dense_nodes),
-#                                                input_shape=(self.generator.X.shape[1], self.generator.X.shape[2])))
-#         self.discriminator.add(Dropout(dropout_rate))
-#
-#         self.discriminator.add(TimeDistributed(Dense(self.generator.vocab),
-#                                                      input_shape=(self.generator.X.shape[1], self.generator.X.shape[2])))
-#
-#         self.discriminator.add(Activation('softmax'))
-#         self.discriminator.compile(loss='sparse_categorical_crossentropy',
-#                                    optimizer=RMSprop(lr=learning_rate, epsilon=epsilon),
-#                                    metrics=['accuracy'])
-#
-#     def set_generator(self):
-#         self.generator = Brain(self.data,
-#                                generate_length=1,
-#                                train_seq_length=self.train_seq_length,
-#                                learning_rate=self.learning_rate,
-#                                epsilon=self.epsilon)
-#         self.seed = self.generator.seed
-#         self.real_next_after_seed = self.generator.real_next_after_seed
-#
-#
-#     def train(self, epochs=10):
-#         for epoch in range(1, epochs+1):
-#             print('\nDiscriminator Epoch {}\n'.format(epoch))
-#
-#             self.generator.train(num_of_epochs=1)
-#             self.generator.generate()
-#             generated_value = self.seed + self.generator.current_predicition
-#             generated_value = generated_value.reshape(1, len(self.seed) + 1, 1)
-#             real_value = array(self.seed + self.real_next_after_seed).reshape(1, len(self.seed) + 1, 1)
-#
-#             print('\nFitting prediction to actual next value in discriminator\n')
-#             self.discriminator.fit(generated_value, real_value, epochs=1, shuffle=False, verbose=1)
-#             print('Done')
-#
-#             print('\nGetting new seed\n')
-#             self.generator.set_seed(self.generator.cat_data)
-#             self.seed = self.generator.seed
-#             self.real_next_after_seed = self.generator.real_next_after_seed

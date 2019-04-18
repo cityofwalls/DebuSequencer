@@ -161,7 +161,7 @@ class Brain:
         """ Given a categorical sequence, find a random seed sequence of length self.train_seq_length. """
         seq_choice = choice(seq)
         while len(seq_choice) < self.train_seq_length:
-            seq_choice = choice(seqs)
+            seq_choice = choice(seq)
 
         idx = seq_choice.index(choice(seq_choice[:-self.train_seq_length - 2]))
         seed = seq_choice[idx:idx+self.train_seq_length]
@@ -220,16 +220,6 @@ class Brain:
         with open(path_and_filename + '.pkl', 'wb') as output:
             pkl.dump(f, output, pkl.HIGHEST_PROTOCOL)
 
-        # factors_file = open('./saved_models/' + training_set_name + '_factors.txt', 'w')
-        # pkl.dump(self.factors, factors_file)
-        # # for element in self.factors:
-        # #     for
-        # #     e = str(element) + '|'
-        # #     factors_file.write(e)
-        # #
-        # # print(factors_file)
-        # factors_file.close()
-
     def load(self, path_and_filename):
         self.model = load_model(path_and_filename,
                                custom_objects=None,
@@ -238,12 +228,3 @@ class Brain:
         with open(path_and_filename + '.pkl','rb') as input:
             f = pkl.load(input)
         self.factors = f
-
-        # with open(factors_file) as f:
-        #     self.factors = [i.split('|') for i in f]
-        # print(self.factors)
-
-        # f = open(factors_file, 'r')
-        # factors = []
-        # for line in f:
-        #     factors.append(line)
