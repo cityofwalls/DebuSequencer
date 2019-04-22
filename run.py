@@ -6,11 +6,11 @@ import pandas as pd
 from gan import GAN
 
 def main():
-    dir           = 'Stevie'
+    dir           = 'Animal_Crossing'
     data_file     = './datasaves/' + dir + '_save'
     gen_file      = './generated_files/' + dir + '_gen'
     model_file    = './saved_models/' + dir + '_model'
-    show_gen      = True
+    show_gen      = False
     training_mode = True
 
     if training_mode:
@@ -30,33 +30,35 @@ def main():
             midistuff.mus_seqs_save(t_data, data_file)
 
         rnn = Brain(t_data,
-                    gpu=False,
+                    gpu=True,
                     opt='rmsprop',
-                    temperature=0.25,
-                    train_seq_length=50,
+                    temperature=0.5,
+                    train_seq_length=100,
                     num_lstm_layers=5,
                     num_dense_layers=2,
-                    lstm_nodes=256,
+                    lstm_nodes=1024,
                     dense_nodes=512,
                     dropout_rate=0.5,
-                    learning_rate=0.005,
+                    #learning_rate=0.005,
+                    learning_rate=0.1,
                     epsilon=0.5,
                     gen_mode='midi',
                     loss_func='sparse_categorical_crossentropy')
 
-        rnn.train(num_of_epochs=10)
+        rnn.train(num_of_epochs=200)
         rnn.save(model_file)
     else:
-        rnn = Brain(gpu=False,
+        rnn = Brain(gpu=True,
                     opt='rmsprop',
-                    temperature=0.25,
-                    train_seq_length=5,
+                    temperature=0.5,
+                    train_seq_length=100,
                     num_lstm_layers=5,
                     num_dense_layers=2,
-                    lstm_nodes=256,
+                    lstm_nodes=1024,
                     dense_nodes=512,
                     dropout_rate=0.5,
-                    learning_rate=0.005,
+                    #learning_rate=0.005,
+                    learning_rate=0.1,
                     epsilon=0.5,
                     gen_mode='midi',
                     loss_func='sparse_categorical_crossentropy')
