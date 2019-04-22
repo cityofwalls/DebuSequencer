@@ -6,7 +6,7 @@ import pandas as pd
 from gan import GAN
 
 def main():
-    dir           = 'Animal_Crossing'
+    dir           = 'Daft_Punk'
     data_file     = './datasaves/' + dir + '_save'
     gen_file      = './generated_files/' + dir + '_gen'
     model_file    = './saved_models/' + dir + '_model'
@@ -17,7 +17,7 @@ def main():
         try:
             t_data = midistuff.mus_seqs_load(data_file)
         except:
-            t = load_midi_files_from('./' + dir)
+            t = load_midi_files_from('./Music/' + dir)
 
             t_seqs = []
             for seq in t:
@@ -30,7 +30,7 @@ def main():
             midistuff.mus_seqs_save(t_data, data_file)
 
         rnn = Brain(t_data,
-                    gpu=True,
+                    gpu=False,
                     opt='rmsprop',
                     temperature=0.5,
                     train_seq_length=100,
@@ -48,7 +48,7 @@ def main():
         rnn.train(num_of_epochs=200)
         rnn.save(model_file)
     else:
-        rnn = Brain(gpu=True,
+        rnn = Brain(gpu=False,
                     opt='rmsprop',
                     temperature=0.5,
                     train_seq_length=100,
