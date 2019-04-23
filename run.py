@@ -6,11 +6,11 @@ import pandas as pd
 from gan import GAN
 
 def main():
-    dir           = 'Daft_Punk'
-    data_file     = './datasaves/' + dir + '_save'
-    gen_file      = './generated_files/' + dir + '_gen'
-    model_file    = './saved_models/' + dir + '_model'
-    show_gen      = False
+    dir           		  = 'Miles_Davis'
+    data_file     	   = './datasaves/' + dir + '_save'
+    gen_file      	   = './generated_files/' + dir + '_gen'
+    model_file    	 = './saved_models/' + dir + '_model'
+    show_gen      	= False
     training_mode = True
 
     if training_mode:

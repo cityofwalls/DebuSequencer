@@ -34,6 +34,7 @@ class Brain:
                  dense_nodes=512,
                  dropout_rate=0.3,
                  temperature=0.5,
+				 decay=0.7,
                  generate_length=100,
                  num_voices=1,
                  act='softmax',
@@ -49,6 +50,7 @@ class Brain:
             self.X, self.y = self.data_to_X_y(data)
 
         self.temperature = temperature
+		self.decay = decay
         self.generate_length = generate_length
         self.last_prediction = None
         self.num_voices = num_voices
@@ -98,7 +100,7 @@ class Brain:
 
             self.model.add(Activation(act))
             if opt == 'rmsprop':
-                self.model.compile(loss=loss_func, optimizer=RMSprop(lr=learning_rate,epsilon=epsilon), metrics=['accuracy'])
+                self.model.compile(loss=loss_func, optimizer=RMSprop(lr=learning_rate,epsilon=epsilon,decay=self.decay), metrics=['accuracy'])
             elif opt == 'adam':
                 self.model.compile(loss=loss_func, optimizer=Adam(lr=learning_rate, epsilon=epsilon, amsgrad=False))
             else:
@@ -201,8 +203,6 @@ class Brain:
             cur_seq = np.append(cur_seq, idx)
             cur_seq = cur_seq.reshape(1, 1, self.train_seq_length)
 
-
-        #print(predicted_sequence)
         if self.gen_mode == 'midi':
             return midistuff.data_to_mus_seq(predicted_sequence, self.factors, self.num_voices)
         elif self.gen_mode == 'wav':
