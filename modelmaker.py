@@ -35,7 +35,6 @@ class Brain:
                  dense_nodes=512,
                  dropout_rate=0.3,
                  temperature=0.5,
-                 decay=0.7,
                  generate_length=100,
                  num_voices=1,
                  act='softmax',
@@ -100,7 +99,7 @@ class Brain:
 
             self.model.add(Activation(act))
             if opt == 'rmsprop':
-                self.model.compile(loss=loss_func, optimizer=RMSprop(lr=learning_rate, epsilon=epsilon, decay=decay), metrics=['accuracy'])
+                self.model.compile(loss=loss_func, optimizer=RMSprop(lr=learning_rate, epsilon=epsilon), metrics=['accuracy'])
             elif opt == 'adam':
                 self.model.compile(loss=loss_func, optimizer=Adam(lr=learning_rate, epsilon=epsilon, amsgrad=False))
             elif opt == 'sgd':
