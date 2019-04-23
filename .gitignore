@@ -1,0 +1,5 @@
+# Ignore compiled code
+__pycache__/
+
+# Ignore saved models as these are generally too big to fit on github
+saved_models/
