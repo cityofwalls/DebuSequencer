@@ -37,7 +37,8 @@ def main():
     #X = X.reshape(len(X)//byte_length, 1, byte_length)
 
     rnn = Brain([X],
-                learning_rate=0.005,
+                #learning_rate=0.005,
+                learning_rate=0.1,
                 epsilon=0.5,
                 num_lstm_layers=5,
                 num_dense_layers=2,

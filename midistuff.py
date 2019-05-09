@@ -35,7 +35,9 @@ def transpose_to_c(note, orig_key):
         else:
             note.transpose(-6)
             return note
-    # We don't change 'even' sharps
+    # We don't change 'even' sharps, the value represents the necessary transposition
+    else:
+        note.transpose(-orig_key)
     return note
 
 def is_new_measure_info(e):

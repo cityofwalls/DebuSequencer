@@ -6,12 +6,12 @@ import pandas as pd
 from gan import GAN
 
 def main():
-    dir           = 'Miles_Davis'
+    dir           = 'Bach_Inventions'
     data_file     = './datasaves/' + dir + '_save'
     gen_file      = './generated_files/' + dir + '_gen'
     model_file    = './saved_models/' + dir + '_model'
-    show_gen      = False
-    training_mode = True
+    show_gen      = True
+    training_mode = False
 
     if training_mode:
         try:
@@ -45,13 +45,13 @@ def main():
                     gen_mode='midi',
                     loss_func='sparse_categorical_crossentropy')
 
-        rnn.train(num_of_epochs=200)
+        rnn.train(num_of_epochs=100)
         rnn.save(model_file)
     else:
         rnn = Brain(gpu=False,
                     opt='rmsprop',
-                    temperature=0.5,
-                    train_seq_length=100,
+                    temperature=0.3,
+                    train_seq_length=5,
                     num_lstm_layers=5,
                     num_dense_layers=2,
                     lstm_nodes=1024,
